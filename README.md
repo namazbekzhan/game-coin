@@ -25,6 +25,12 @@ In this project, you will create a smart contract and a frontend application to 
 - **Buy/Sell Game Coin**: Users can buy and sell Game Coin for ETH.
 - **Transfer Game Coin**: Users can transfer Game Coin to another address.
 - **Sign Out**: Users can sign out from the application.
+![telegram-cloud-photo-size-2-5341602443684862103-y](https://github.com/namazbekzhan/game-coin/assets/169717110/7195405b-f937-4d1f-8f8a-2120bcb2985b)
+
+
+- **Profile Page and User Dashboard**: Users can view their own information.
+![telegram-cloud-photo-size-2-5341602443684862104-y](https://github.com/namazbekzhan/game-coin/assets/169717110/e95c50f0-7ba3-4ad2-809b-56453320004b)
+
 
 ## Prerequisites
 
