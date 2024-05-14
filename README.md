@@ -45,34 +45,13 @@ In this project, you will create a smart contract and a frontend application to 
    git clone https://github.com/namazbekzhan/game-coin.git
    cd game-coin
 
-**Install dependencies:**
+2. **Open index.html in a web browser.**
 
-   ```bash
-      npm install
-   ```
+3. **Connect MetaMask to the Sepolia test network.**
 
-
-
-**Deployment:**
-Configure the deployment environment:
-Update the config.js file with your desired contract address and network details.
-Deploy the smart contract:
-
- ```bash
-   npm run deploy
-   ```
+4. **Interact with the application using the provided features.**
 
 
-**Running the Frontend:**
-Start the development server:
-
- ```bash
-   npm run start
-```
-
-
-
-**Access the application in your browser at http://localhost:3000**
 **Usage:**
   Connect your MetaMask wallet to the application
   Interact with the smart contract functions through the user interface:
@@ -81,7 +60,6 @@ Start the development server:
   View account information and GC balance
 
 **Testing:**
-   Unit tests for the smart contract are included in the test directory.
   Manual testing of the frontend functionalities is recommended.
 
 **License:**
