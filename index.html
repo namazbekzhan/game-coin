@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>NB Coin Wallet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1617396900799-f4ec2b43c7ae?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            color: #e1e1e1;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-blend-mode: darken;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            color: #ffc107;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px #000;
+            animation: slide-in 1s forwards;
+            text-align: center;
+        }
+
+        .container {
+            background-color: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            animation: fade-in 1.2s ease-out;
+            text-align: center;
+        }
+
+        .info {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .info p {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+
+        h3 {
+            color: #ffc107;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 96%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background-color: #0f3460;
+            color: #e1e1e1;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ffc107;
+            color: #1a1a2e;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 10px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes slide-in {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@truffle/contract@4.3.36/dist/truffle-contract.min.js"></script>
+</head>
+<body>
+<h1><i class="fas fa-coins"></i> NB Coin Wallet</h1>
+<div class="container">
+    <div style="text-align: center; background-color: #007bff; margin: auto; width: 100px;">
+        <a href="profile.html"> Go to Profile</a>
+    </div>
+    <div class="info">
+        <p id="account"></p>
+        <p id="balance"></p>
+        <p id="gcBalance"></p>
+        <p id="sellRate1"></p>
+        <p id="buyRate1"></p>
+    </div>
+    <div id="registration">
+        <h3>Register User</h3>
+        <input type="text" id="username" placeholder="Username">
+        <input type="text" id="email" placeholder="Email">
+        <input type="text" id="bio" placeholder="Bio">
+        <button onclick="registerUser()">Register</button>
+    </div>
+    <h3>Get User Info</h3>
+    <input type="text" id="userAccount" placeholder="User Address">
+    <button onclick="getUserInfo()">Get Info</button>
+    <h3>Buy Game Coin (NB)</h3>
+    <input type="number" id="buyAmount" placeholder="Amount">
+    <button onclick="buyGc()">Buy</button>
+    <h3>Sell Game Coin (NB)</h3>
+    <input type="number" id="sellAmount" placeholder="Amount">
+    <button onclick="sellGc()">Sell</button>
+    <h3>Transfer Game Coin (NB)</h3>
+    <input type="text" id="transferTo" placeholder="To Address">
+    <input type="number" id="transferAmount" placeholder="Amount">
+    <button onclick="transferGc()">Transfer</button>
+    <h3>Send to Owner</h3>
+    <input type="number" id="sendToOwnerAmount" placeholder="Amount">
+    <button onclick="sendToOwner()">Send</button>
+    <h3>Set Rates</h3>
+    <input type="number" id="sellRate" placeholder="Sell Rate (wei)">
+    <input type="number" id="buyRate" placeholder="Buy Rate (wei)">
+    <button onclick="setRates()">Set Rates</button>
+</div>
+<script>
+    let web3;
+    let account;
+    let gcContract;
+    const abi =[
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "gcAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "buy",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "allowance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientAllowance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "balance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientBalance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "approver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidApprover",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "receiver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidReceiver",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSender",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSpender",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnableInvalidOwner",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnableUnauthorizedAccount",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "username",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "email",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "bio",
+                    "type": "string"
+                }
+            ],
+            "name": "registerUser",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "gcAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "sell",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "gcAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "send",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "sendToOwner",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_sellRate",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_buyRate",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setRates",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transfer",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferFrom",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "stateMutability": "payable",
+            "type": "receive"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "buyRate",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "getUserInfo",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "sellRate",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
+    const contractAddress = '0xD1B84Bc21EFb34411a095B40B1429353658D813E';
+
+    async function loadWeb3() {
+        if (typeof window.ethereum !== 'undefined') {
+            web3 = new Web3(window.ethereum);
+            await window.ethereum.enable();
+        } else {
+            alert("Please install Metamask to interact with this DApp");
+        }
+    }
+
+    async function loadBlockchainData() {
+        const accounts = await web3.eth.getAccounts();
+        account = accounts[0];
+        document.getElementById("account").innerText = `Account: ${account}`;
+
+        const balance = await web3.eth.getBalance(account);
+        document.getElementById("balance").innerText = `ETH Balance: ${web3.utils.fromWei(balance, "ether")} ETH`;
+
+        gcContract = new web3.eth.Contract(abi, contractAddress);
+        const gcBalance = await gcContract.methods.balanceOf(account).call();
+        document.getElementById("gcBalance").innerText = `NB Balance: ${web3.utils.fromWei(gcBalance, "ether")} NB`;
+
+        const sellRate = await gcContract.methods.sellRate().call();
+        const buyRate = await gcContract.methods.buyRate().call();
+        document.getElementById("sellRate1").innerText = `Sell Rate: ${web3.utils.fromWei(sellRate, "ether")} ETH per NB`;
+        document.getElementById("buyRate1").innerText = `Buy Rate: ${web3.utils.fromWei(buyRate, "ether")} ETH per NB`;
+
+        // Check if the user is registered and hide the registration form if they are
+        const userInfo = await gcContract.methods.getUserInfo(account).call();
+        if (userInfo[0] !== "" && userInfo[1] !== "") {
+            document.getElementById("registration").style.display = "none";
+        }
+    }
+
+    async function registerUser() {
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const bio = document.getElementById('bio').value;
+        await gcContract.methods.registerUser(username, email, bio).send({ from: account });
+        alert("User registered successfully!");
+        document.getElementById("registration").style.display = "none";
+    }
+
+    async function getUserInfo() {
+        const userAccount = document.getElementById("userAccount").value;
+        const userInfo = await gcContract.methods.getUserInfo(userAccount).call();
+        alert(`Username: ${userInfo[0]}\nEmail: ${userInfo[1]}`);
+    }
+
+    async function buyGc() {
+        const amount = document.getElementById("buyAmount").value;
+        const sellRate = await gcContract.methods.sellRate().call();
+        const value = web3.utils.toWei((amount * sellRate).toString(), "ether");
+
+        try {
+            const gasEstimate = await gcContract.methods.buy(web3.utils.toWei(amount, "ether")).estimateGas({ from: account, value });
+            const gasPrice = await web3.eth.getGasPrice();
+            const totalCost = web3.utils.toBN(value).add(web3.utils.toBN(gasEstimate).mul(web3.utils.toBN(gasPrice)));
+
+            const accountBalance = await web3.eth.getBalance(account);
+
+            if (web3.utils.toBN(accountBalance).gte(totalCost)) {
+                await gcContract.methods.buy(web3.utils.toWei(amount, "ether")).send({ from: account, value, gas: gasEstimate, gasPrice });
+                alert("Bought NB successfully!");
+            } else {
+                alert("Insufficient funds for this transaction.");
+            }
+        } catch (error) {
+            console.error("Error estimating gas or sending transaction:", error);
+            alert("Transaction failed. Please check the console for more details.");
+        }
+    }
+
+
+    async function sellGc() {
+        const amount = document.getElementById("sellAmount").value;
+        await gcContract.methods.sell(web3.utils.toWei(amount, "ether")).send({ from: account });
+        alert("Sold NB successfully!");
+    }
+
+    async function transferGc() {
+        const to = document.getElementById("transferTo").value;
+        const amount = document.getElementById("transferAmount").value;
+        await gcContract.methods.send(to, web3.utils.toWei(amount, "ether")).send({ from: account });
+        alert("Transferred NB successfully!");
+    }
+
+    async function sendToOwner() {
+        const amount = document.getElementById("sendToOwnerAmount").value;
+        await gcContract.methods.sendToOwner(web3.utils.toWei(amount, "ether")).send({ from: account });
+        alert("Sent to Owner successfully!");
+    }
+
+    async function setRates() {
+        const sellRate = document.getElementById("sellRate").value;
+        const buyRate = document.getElementById("buyRate").value;
+        await gcContract.methods.setRates(sellRate, buyRate).send({ from: account });
+        alert("Rates updated successfully!");
+    }
+
+    window.onload = async () => {
+        await loadWeb3();
+        await loadBlockchainData();
+    };
+</script>
+</body>
+</html>

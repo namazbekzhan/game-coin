@@ -1,0 +1,102 @@
+body {
+    background-image: url('https://images.unsplash.com/photo-1617396900799-f4ec2b43c7ae?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    font-family: 'Arial', sans-serif;
+    color: #e1e1e1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+h1 {
+    color: #ffc107;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px #000;
+    animation: slide-in 1s forwards;
+}
+.container {
+    background-color: #16213e;
+    border-radius: 15px;
+    box-shadow: 0 12px 18px rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    animation: fade-in 1.2s ease-out;
+    text-align: center;
+}
+.info {
+    text-align: center;
+    margin-bottom: 15px;
+}
+.info p {
+    font-size: 1.2em;
+    margin: 5px 0;
+}
+h3 {
+    color: #ffc107;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    text-align: center;
+
+    /*padding: 10px;*/
+}
+input[type="text"], input[type="number"] {
+    width: 95%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #0f3460;
+    color: #e1e1e1;
+    font-size: 1em;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffc107;
+    color: #1a1a2e;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 10px 0;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+button:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    width: 101%;
+    height: 102%;
+    transition: 0.5s;
+}
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.48);
+}
+@keyframes slide-in {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.profile-link {
+    display: inline-block;
+    background-color: #007bff;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.profile-link:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
