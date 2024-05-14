@@ -43,6 +43,7 @@ In this project, you will create a smart contract and a frontend application to 
 
    ```bash
       npm install
+```
 
 
 
@@ -53,27 +54,29 @@ Deploy the smart contract:
 
  ```bash
 npm run deploy
+```
 
 
-Running the Frontend:
+**Running the Frontend:**
 Start the development server:
 
  ```bash
 npm run start
+```
 
 
-Access the application in your browser at http://localhost:3000
-Usage:
+**Access the application in your browser at http://localhost:3000**
+**Usage:**
   Connect your MetaMask wallet to the application
   Interact with the smart contract functions through the user interface:
   Register a new user profile
   Buy, sell, and transfer GC tokens
   View account information and GC balance
-Testing:
+**Testing:**
    Unit tests for the smart contract are included in the test directory.
   Manual testing of the frontend functionalities is recommended.
-License:
+**License:**
   MIT License
-Authors:
+**Authors:**
   Namazbek Bekzhanov
 
